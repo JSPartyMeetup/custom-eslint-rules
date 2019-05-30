@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Пишем свои ESLint-правила</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="src/syntax.min.css">
+    <link rel="stylesheet" href="shower/themes/ribbon/styles/styles.css">
+    <style>
+        .shower {
+            --slide-ratio: calc(16 / 10);
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .ast.slide pre code {
+            width: auto;
+        }
+
+        .note {
+            position: absolute;
+            bottom: 20px;
+        }
+
+         .ast .columns {
+             display: flex;
+             flex-direction: row;
+         }
+
+        .ast .column-left {
+            width: 40%;
+        }
+
+        .ast .column-right {
+            width: 60%;
+
+            margin-top: -90px;
+        }
+
+        s {
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="shower list">
+
+    <header class="caption" id="index">
+        <h1>Пишем свои ESLint-правила</h1>
+        <p>Леонид Лебедев, Яндекс.Маркет</p>
+    </header>
+
+    <section class="slide main">
+        <h2 class="title">Пишем свои ESLint-правила</h2>
+        <p>Леонид Лебедев, Яндекс.Маркет</p>
+
+        <style>
+            .main {
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+            }
+
+            .main .title {
+                margin-bottom: 60px;
+                font-size: 70px;
+            }
+        </style>
+    </section>
+
+    <section class="slide">
+        <h2>О&nbsp;себе</h2>
+        <ul>
+            <li>Разработчик интерфейсов в&nbsp;<a href="https://market.yandex.ru">Яндекс.Маркет</a> 1,5 года</li>
+            <li>Занимаюсь экспериментальными проектами</li>
+            <li>😍 ESLint</li>
+        </ul>
+    </section>
+
+    <section class="slide">
+        <h2>Цель доклада</h2>
+        <ul>
+            <li class="next">Зачем и как писать правила</li>
+            <li class="next">Поделиться опытом</li>
+        </ul>
+    </section>
+
+    <section class="slide">
+        <h2>План</h2>
+        <ol>
+            <li>Введение</li>
+            <li>Теория</li>
+            <li>Практика</li>
+            <li>Альтернативы</li>
+            <li>Выводы</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>План</h2>
+        <ol>
+            <li><b>Введение</b></li>
+            <li>Теория</li>
+            <li>Практика</li>
+            <li>Альтернативы</li>
+            <li>Выводы</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>ESLint</h2>
+        <ul>
+            <li class="next">Статический анализатор для линтинга кода</li>
+            <li class="next">Стандарт в разработке</li>
+            <li class="next">Гибкая конфигурация</li>
+            <li class="next">Возможность писать собственные правила</li>
+        </ul>
+    </section>
+
+    <section class="slide advantages">
+        <h2>Зачем использовать?</h2>
+        <ol>
+            <li class="next">Единообразный код</li>
+            <li class="next">Лучшие практики</li>
+            <li class="next">Предотвращение глупых ошибок</li>
+            <li class="next">Облегчение проверки PR</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>Популярные руководства</h2>
+        <ol>
+            <li>
+                <a href="https://github.com/airbnb/javascript/">Airbnb JavaScript Style Guide</a>
+                (<a href="https://www.npmjs.com/package/eslint-config-airbnb">eslint-config-airbnb</a>)
+            </li>
+            <li>
+                <a href="https://github.com/standard/standard">JavaScript Standard Style Guide</a>
+                (<a href="https://www.npmjs.com/package/eslint-config-standard">eslint-config-standard</a>)
+            </li>
+            <li>
+                <a href="https://google.github.io/styleguide/jsguide.html">Google JavaScript Style Guide</a>
+                (<a href="https://www.npmjs.com/package/eslint-config-google">eslint-config-google</a>)
+            </li>
+            <li>
+                <a href="https://github.com/rwaldron/idiomatic.js/">Idiomatic JavaScript Style Guide</a>
+            </li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>Зачем писать свои правила?</h2>
+        <ol>
+            <li class="next">Лучшие практики
+                <div>
+                    <a class="next" href="https://github.com/yannickcr/eslint-plugin-react">eslint-plugin-react</a>
+                    <a class="next" href="https://github.com/dgraham/eslint-plugin-jquery">eslint-plugin-jquery</a>
+                </div>
+                <div>
+                    <a class="next" href="https://github.com/gemini-testing/hermione">Hermione</a>
+                </div>
+            </li>
+            <li class="next">Множество договоренностей, которые постоянно нарушаются</li>
+            <li class="next">Помощь в разработке</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>План</h2>
+        <ol>
+            <li><s>Введение</s></li>
+            <li><b>Теория</b></li>
+            <li>Практика</li>
+            <li>Альтернативы</li>
+            <li>Выводы</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>Теория</h2>
+        <ol>
+            <li>Плагин</li>
+            <li>AST</li>
+            <li>Правило ESLint</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>Плагин</h2>
+        <p class="next">Модуль, который расширяет набор встроенных правил</p>
+        <p class="next">
+            Встроенные правила: <code>no-var</code>, <code>no-tabs</code>
+        </p>
+        <p class="next">
+            <a href="https://github.com/yannickcr/eslint-plugin-react">eslint-plugin-react</a>:
+            <code>react/jsx-uses-vars</code>, <code>react/display-name</code>
+        </p>
+    </section>
+
+
+    <section class="slide">
+        <h2>Плагин</h2>
+        <p>
+            Создать плагин можно с помощью <a href="https://www.npmjs.com/package/generator-eslint">Yeoman генератора</a> от ESLint<br>
+            <code>yo eslint:plugin</code>
+        </p>
+        <pre>
+            <code class="mark">eslint-plugin-market</code>
+            <code class="mark">    /docs</code>
+            <code class="mark">    /lib</code>
+            <code class="mark">    /tests</code>
+            <code class="mark">    package.json</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <h2>Плагин</h2>
+        <i>lib/index.js</i>
+        <pre>
+            <code class="mark">module.exports = {</code>
+            <code class="mark">    rules: {</code>
+            <code class="mark">        'no-only': {...},</code>
+            <code class="mark">    },</code>
+            <code class="mark">};</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <h2>Плагин</h2>
+        <div>
+            В проектном <code>.eslintrc.js</code> подключаем созданный плагин
+        </div>
+        <div>
+            <pre>
+                <code class="mark">module.exports = {</code>
+                <code class="mark">    plugins: ['market'],</code>
+                <code class="mark">    rules: {</code>
+                <code class="mark">        'market/no-only': 'error',</code>
+                <code class="mark">    },</code>
+                <code class="mark">};</code>
+            </pre>
+        </div>
+    </section>
+
+    <section class="slide">
+        <h2>AST</h2>
+        <blockquote class="next">
+            AST — это древовидное представление абстрактной синтаксической структуры исходного кода.
+            Каждый узел дерева обозначает конструкцию, встречающуюся в исходном коде.
+        </blockquote>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) {</code>
+                    <code>    return a + b;</code>
+                    <code>}</code>
+                </pre>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) {</code>
+                    <code>    return a + b;</code>
+                    <code>}</code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code><mark class="important">function sum(a, b) {</mark></code>
+                    <code><mark class="important">    return a + b;</mark></code>
+                    <code><mark class="important">}</mark></code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(9.5 116.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="240" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:240px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                      <span>
+                                        <font style="font-size:24px">
+                                          FunctionDeclaration
+                                        </font>
+                                      </span>
+                                    <br/>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="120" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style=&quot;font-size: 24px&quot;&gt;FunctionDeclaration&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 100 L 130 60" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code><mark class="important">function sum(a, b) {</mark></code>
+                    <code><mark class="important">    return a + b;</mark></code>
+                    <code><mark class="important">}</mark></code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(9.5 116.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="240" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:240px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                  <span>
+                                    <font style="font-size:24px">
+                                      FunctionDeclaration
+                                    </font>
+                                  </span>
+                                    <br/>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="120" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style=&quot;font-size: 24px&quot;&gt;FunctionDeclaration&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path fill="#fff" stroke="#000" pointer-events="none" d="M310 60h210v140H310z"/>
+                    <switch transform="translate(324.5 74.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="180" height="110" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Helvetica;color:#000;line-height:1.2;vertical-align:top;width:182px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <div style="text-align:left">
+                                        <font style="font-size:24px">
+                                            params: [...]
+                                        </font>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span>
+                                          <font style="font-size:24px">
+                                            generator: false
+                                          </font>
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          async: false
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          expression: false
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 100 L 130 60" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M260 130h43.63" fill="none" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M308.88 130l-7 3.5 1.75-3.5-1.75-3.5z" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) <mark class="important">{</mark></code>
+                    <code><mark class="important">    return a + b;</mark></code>
+                    <code><mark class="important">}</mark></code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(9.5 116.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="240" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:240px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                  <span>
+                                    <font style="font-size:24px">
+                                      FunctionDeclaration
+                                    </font>
+                                  </span>
+                                    <br/>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="120" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style=&quot;font-size: 24px&quot;&gt;FunctionDeclaration&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path fill="#fff" stroke="#000" pointer-events="none" d="M310 60h210v140H310z"/>
+                    <switch transform="translate(324.5 74.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="180" height="110" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Helvetica;color:#000;line-height:1.2;vertical-align:top;width:182px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <div style="text-align:left">
+                                        <font style="font-size:24px">
+                                            params: [...]
+                                        </font>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span>
+                                          <font style="font-size:24px">
+                                            generator: false
+                                          </font>
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          async: false
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          expression: false
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 100 L 130 60" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M260 130h43.63" fill="none" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M308.88 130l-7 3.5 1.75-3.5-1.75-3.5z" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"></rect>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"></rect>
+                    <switch transform="translate(34.5 216.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="190" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:192px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                      <span>
+                                        <font style="font-size:24px">
+                                          BlockStatement
+                                        </font>
+                                      </span>
+                                    <br>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="95" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style="font-size: 24px"&gt;BlockStatement&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 200 L 130 195 Q 130 190 130 180 L 130 160" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) {</code>
+                    <code>    <mark class="important">return a + b;</mark></code>
+                    <code>}</code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(9.5 116.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="240" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:240px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                  <span>
+                                    <font style="font-size:24px">
+                                      FunctionDeclaration
+                                    </font>
+                                  </span>
+                                    <br/>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="120" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style=&quot;font-size: 24px&quot;&gt;FunctionDeclaration&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path fill="#fff" stroke="#000" pointer-events="none" d="M310 60h210v140H310z"/>
+                    <switch transform="translate(324.5 74.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="180" height="110" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Helvetica;color:#000;line-height:1.2;vertical-align:top;width:182px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <div style="text-align:left">
+                                        <font style="font-size:24px">
+                                            params: [...]
+                                        </font>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span>
+                                          <font style="font-size:24px">
+                                            generator: false
+                                          </font>
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          async: false
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          expression: false
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 100 L 130 60" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M260 130h43.63" fill="none" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M308.88 130l-7 3.5 1.75-3.5-1.75-3.5z" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"></rect>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"></rect>
+                    <switch transform="translate(34.5 216.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="190" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:192px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                      <span>
+                                        <font style="font-size:24px">
+                                          BlockStatement
+                                        </font>
+                                      </span>
+                                    <br>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="95" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style="font-size: 24px"&gt;BlockStatement&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 200 L 130 195 Q 130 190 130 180 L 130 160" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" pointer-events="none"/>
+                    <g xmlns="http://www.w3.org/2000/svg" transform="translate(25.5,316.5)">
+                        <switch>
+                            <foreignObject style="overflow:visible;" pointer-events="all" width="208" height="26"
+                                           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: inline-block; font-size: 12px; font-family: Verdana; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 208px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display:inline-block;text-align:inherit;text-decoration:inherit;"><span
+                                        style="font-size: 24px">ReturnStatement</span></div>
+                                </div>
+                            </foreignObject>
+                            <text x="104" y="19" fill="#000000" text-anchor="middle" font-size="12px"
+                                  font-family="Verdana">&lt;span style="font-size: 24px"&gt;ReturnStatement&lt;/span&gt;
+                            </text>
+                        </switch>
+                    </g>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 300 L 130 290 Q 130 280 130 270 L 130 260" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) {</code>
+                    <code>    return <mark class="important">a + b</mark>;</mark></code>
+                    <code>}</code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(9.5 116.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="240" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:240px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                  <span>
+                                    <font style="font-size:24px">
+                                      FunctionDeclaration
+                                    </font>
+                                  </span>
+                                    <br/>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="120" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style=&quot;font-size: 24px&quot;&gt;FunctionDeclaration&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path fill="#fff" stroke="#000" pointer-events="none" d="M310 60h210v140H310z"/>
+                    <switch transform="translate(324.5 74.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="180" height="110" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Helvetica;color:#000;line-height:1.2;vertical-align:top;width:182px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <div style="text-align:left">
+                                        <font style="font-size:24px">
+                                            params: [...]
+                                        </font>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span>
+                                          <font style="font-size:24px">
+                                            generator: false
+                                          </font>
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          async: false
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          expression: false
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 100 L 130 60" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M260 130h43.63" fill="none" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M308.88 130l-7 3.5 1.75-3.5-1.75-3.5z" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"></rect>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"></rect>
+                    <switch transform="translate(34.5 216.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="190" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:192px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                      <span>
+                                        <font style="font-size:24px">
+                                          BlockStatement
+                                        </font>
+                                      </span>
+                                    <br>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="95" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style="font-size: 24px"&gt;BlockStatement&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 200 L 130 195 Q 130 190 130 180 L 130 160" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" pointer-events="none"/>
+                    <g xmlns="http://www.w3.org/2000/svg" transform="translate(25.5,316.5)">
+                        <switch>
+                            <foreignObject style="overflow:visible;" pointer-events="all" width="208" height="26"
+                                           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: inline-block; font-size: 12px; font-family: Verdana; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 208px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display:inline-block;text-align:inherit;text-decoration:inherit;"><span
+                                        style="font-size: 24px">ReturnStatement</span></div>
+                                </div>
+                            </foreignObject>
+                            <text x="104" y="19" fill="#000000" text-anchor="middle" font-size="12px"
+                                  font-family="Verdana">&lt;span style="font-size: 24px"&gt;ReturnStatement&lt;/span&gt;
+                            </text>
+                        </switch>
+                    </g>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="15" y="400" width="230" height="60" rx="9" ry="9" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="15" y="400" width="230" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" pointer-events="none"/>
+                    <g xmlns="http://www.w3.org/2000/svg" transform="translate(25.5,416.5)">
+                        <switch>
+                            <foreignObject style="overflow:visible;" pointer-events="all" width="208" height="26"
+                                           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: inline-block; font-size: 12px; font-family: Verdana; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 208px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display:inline-block;text-align:inherit;text-decoration:inherit;"><span
+                                        style="font-size: 24px">BinaryExpression</span></div>
+                                </div>
+                            </foreignObject>
+                            <text x="104" y="19" fill="#000000" text-anchor="middle" font-size="12px"
+                                  font-family="Verdana">&lt;span style="font-size: 24px"&gt;BinaryExpression&lt;/span&gt;
+                            </text>
+                        </switch>
+                    </g>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 400 L 130 360" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 300 L 130 290 Q 130 280 130 270 L 130 260" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast">
+        <h2>AST</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) {</code>
+                    <code>    return a + b;</code>
+                    <code>}</code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(9.5 116.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="240" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:240px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                  <span>
+                                    <font style="font-size:24px">
+                                      FunctionDeclaration
+                                    </font>
+                                  </span>
+                                    <br/>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="120" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style=&quot;font-size: 24px&quot;&gt;FunctionDeclaration&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path fill="#fff" stroke="#000" pointer-events="none" d="M310 60h210v140H310z"/>
+                    <switch transform="translate(324.5 74.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="180" height="110" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Helvetica;color:#000;line-height:1.2;vertical-align:top;width:182px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <div style="text-align:left">
+                                        <font style="font-size:24px">
+                                            params: [...]
+                                        </font>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span>
+                                          <font style="font-size:24px">
+                                            generator: false
+                                          </font>
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          async: false
+                                        </span>
+                                    </div>
+                                    <div style="text-align:left">
+                                        <span style="font-size:24px">
+                                          expression: false
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 100 L 130 60" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M260 130h43.63" fill="none" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path d="M308.88 130l-7 3.5 1.75-3.5-1.75-3.5z" stroke="#000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"></rect>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"></rect>
+                    <switch transform="translate(34.5 216.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="190" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:192px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                      <span>
+                                        <font style="font-size:24px">
+                                          BlockStatement
+                                        </font>
+                                      </span>
+                                    <br>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="95" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style="font-size: 24px"&gt;BlockStatement&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 200 L 130 195 Q 130 190 130 180 L 130 160" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" pointer-events="none"/>
+                    <g xmlns="http://www.w3.org/2000/svg" transform="translate(25.5,316.5)">
+                        <switch>
+                            <foreignObject style="overflow:visible;" pointer-events="all" width="208" height="26"
+                                           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: inline-block; font-size: 12px; font-family: Verdana; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 208px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display:inline-block;text-align:inherit;text-decoration:inherit;"><span
+                                        style="font-size: 24px">ReturnStatement</span></div>
+                                </div>
+                            </foreignObject>
+                            <text x="104" y="19" fill="#000000" text-anchor="middle" font-size="12px"
+                                  font-family="Verdana">&lt;span style="font-size: 24px"&gt;ReturnStatement&lt;/span&gt;
+                            </text>
+                        </switch>
+                    </g>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="15" y="400" width="230" height="60" rx="9" ry="9" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="15" y="400" width="230" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" pointer-events="none"/>
+                    <g xmlns="http://www.w3.org/2000/svg" transform="translate(25.5,416.5)">
+                        <switch>
+                            <foreignObject style="overflow:visible;" pointer-events="all" width="208" height="26"
+                                           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: inline-block; font-size: 12px; font-family: Verdana; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 208px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display:inline-block;text-align:inherit;text-decoration:inherit;"><span
+                                        style="font-size: 24px">BinaryExpression</span></div>
+                                </div>
+                            </foreignObject>
+                            <text x="104" y="19" fill="#000000" text-anchor="middle" font-size="12px"
+                                  font-family="Verdana">&lt;span style="font-size: 24px"&gt;BinaryExpression&lt;/span&gt;
+                            </text>
+                        </switch>
+                    </g>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 400 L 130 360" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 300 L 130 290 Q 130 280 130 270 L 130 260" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide ast ast-json">
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) {</code>
+                    <code>    return a + b;</code>
+                    <code>}</code>
+                </pre>
+            </div>
+            <div class="column-right next">
+                <img src="pictures/json-espree.png" alt="AST JSON" width="100%" height="100%"/>
+            </div>
+        </div>
+
+        <style>
+            .ast-json .column-right {
+                margin-left: 50px;
+            }
+
+            .ast-json .column-right {
+                margin-top: 0;
+            }
+        </style>
+    </section>
+
+    <section class="slide">
+        <h2>Правила</h2>
+        <p>Файл, содержащий условия, при котором ESLint сообщает о проблеме</p>
+        <pre>
+            <code class="mark">module.exports = {</code>
+            <code class="mark">    meta: {...},</code>
+            <code class="mark">    create(context) {...},</code>
+            <code class="mark">};</code>
+        </pre>
+
+        <div class="note">
+            <a href="https://eslint.org/docs/developer-guide/working-with-rules">Working with Rules</a>
+        </div>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">meta: {</code>
+            <code class="mark">    type: 'problem',</code>
+            <code class="mark">    docs: {</code>
+            <code class="mark">         description: 'Function declarations are disallowed',</code>
+            <code class="mark">         category: 'Possible Errors',</code>
+            <code class="mark">    },</code>
+            <code class="mark">    fixable: 'code',</code>
+            <code class="mark">    schema: [],</code>
+            <code class="mark">},</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">create(context) {</code>
+            <code class="mark">    return {</code>
+            <code class="mark">        [selector](node) {</code>
+            <code class="mark">            context.report ({...});</code>
+            <code class="mark">        },</code>
+            <code class="mark">    };</code>
+            <code class="mark">}</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">create(<mark>context</mark>) {</code>
+            <code class="mark">    return {</code>
+            <code class="mark">        [selector](node) {</code>
+            <code class="mark">            <mark>context</mark>.report ({...});</code>
+            <code class="mark">        },</code>
+            <code class="mark">    };</code>
+            <code class="mark">}</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">context: {</code>
+            <code class="mark">    id,</code>
+            <code class="mark">    options,</code>
+            <code class="mark">    report({...}),</code>
+            <code class="mark">    ... (опции парсера)</code>
+            <code class="mark">}</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">context: {</code>
+            <code class="mark">    id,</code>
+            <code class="mark">    options,</code>
+            <code class="mark">    <mark>report({...})</mark>,</code>
+            <code class="mark">    ... (опции парсера)</code>
+            <code class="mark">}</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">context.report({</code>
+            <code class="mark">    node,</code>
+            <code class="mark">    message: 'Don\'t use "only"',</code>
+            <code class="mark">    loc: {start: ..., end: ...},</code>
+            <code class="mark">    fix(fixer) {...},</code>
+            <code class="mark">});</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">create(context) {</code>
+            <code class="mark">    return {</code>
+            <code class="mark">        <mark>[selector]</mark>(node) {</code>
+            <code class="mark">            context.report ({...});</code>
+            <code class="mark">        },</code>
+            <code class="mark">    };</code>
+            <code class="mark">}</code>
+        </pre>
+    </section>
+
+    <section class="slide selector">
+        <h2>Селектор</h2>
+        <blockquote>Селектор — это строка, которая будет использоваться для сопоставления узлам AST.</blockquote>
+    </section>
+
+
+    <section class="slide ast">
+        <h2>Селектор</h2>
+        <div class="columns">
+            <div class="column-left">
+                <pre>
+                    <code>function sum(a, b) {</code>
+                    <code>    return a + b;</code>
+                    <code>}</code>
+                </pre>
+            </div>
+            <div class="column-right">
+                <svg xmlns="http://www.w3.org/2000/svg" width="521" height="464" viewBox="-0.5 -0.5 521 464" style="background-color:#fff">
+                    <rect x="65" width="130" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect x="65" width="130" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(80 16.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="92" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:94px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                    <font style="font-size:24px">
+                                        Program
+                                    </font>
+                                </div>
+                            </div>
+                        </foreignObject>
+                    </switch>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"/>
+                    <rect y="100" width="260" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"/>
+                    <switch transform="translate(9.5 116.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="240" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:240px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                  <span>
+                                    <font style="font-size:24px">
+                                      FunctionDeclaration
+                                    </font>
+                                  </span>
+                                    <br/>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="120" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style=&quot;font-size: 24px&quot;&gt;FunctionDeclaration&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 100 L 130 60" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" stroke="#000" transform="translate(2 3)" opacity=".25"></rect>
+                    <rect x="20" y="200" width="220" height="60" rx="9" ry="9" fill="#fff" stroke="#000" pointer-events="none"></rect>
+                    <switch transform="translate(34.5 216.5)">
+                        <foreignObject style="overflow:visible" pointer-events="all" width="190" height="26" requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                            <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;font-size:12px;font-family:Verdana;color:#000;line-height:1.2;vertical-align:top;width:192px;white-space:nowrap;overflow-wrap:normal;text-align:center">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="display:inline-block;text-align:inherit;text-decoration:inherit">
+                                      <span>
+                                        <font style="font-size:24px">
+                                          BlockStatement
+                                        </font>
+                                      </span>
+                                    <br>
+                                </div>
+                            </div>
+                        </foreignObject>
+                        <text x="95" y="19" text-anchor="middle" font-size="12" font-family="Verdana">
+                            &lt;span&gt;&lt;font style="font-size: 24px"&gt;BlockStatement&lt;/font&gt;&lt;/span&gt;&lt;br&gt;
+                        </text>
+                    </switch>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 200 L 130 195 Q 130 190 130 180 L 130 160" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="10" y="300" width="240" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" pointer-events="none"/>
+                    <g xmlns="http://www.w3.org/2000/svg" transform="translate(25.5,316.5)">
+                        <switch>
+                            <foreignObject style="overflow:visible;" pointer-events="all" width="208" height="26"
+                                           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: inline-block; font-size: 12px; font-family: Verdana; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 208px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display:inline-block;text-align:inherit;text-decoration:inherit;"><span
+                                        style="font-size: 24px">ReturnStatement</span></div>
+                                </div>
+                            </foreignObject>
+                            <text x="104" y="19" fill="#000000" text-anchor="middle" font-size="12px"
+                                  font-family="Verdana">&lt;span style="font-size: 24px"&gt;ReturnStatement&lt;/span&gt;
+                            </text>
+                        </switch>
+                    </g>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="15" y="400" width="230" height="60" rx="9" ry="9" fill="#000000" stroke="#000000" transform="translate(2,3)" opacity="0.25"/>
+                    <rect xmlns="http://www.w3.org/2000/svg" x="15" y="400" width="230" height="60" rx="9" ry="9" fill="#ffffff" stroke="#000000" pointer-events="none"/>
+                    <g xmlns="http://www.w3.org/2000/svg" transform="translate(25.5,416.5)">
+                        <switch>
+                            <foreignObject style="overflow:visible;" pointer-events="all" width="208" height="26"
+                                           requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility">
+                                <div xmlns="http://www.w3.org/1999/xhtml"
+                                     style="display: inline-block; font-size: 12px; font-family: Verdana; color: rgb(0, 0, 0); line-height: 1.2; vertical-align: top; width: 208px; white-space: nowrap; overflow-wrap: normal; text-align: center;">
+                                    <div xmlns="http://www.w3.org/1999/xhtml"
+                                         style="display:inline-block;text-align:inherit;text-decoration:inherit;"><span
+                                        style="font-size: 24px">BinaryExpression</span></div>
+                                </div>
+                            </foreignObject>
+                            <text x="104" y="19" fill="#000000" text-anchor="middle" font-size="12px"
+                                  font-family="Verdana">&lt;span style="font-size: 24px"&gt;BinaryExpression&lt;/span&gt;
+                            </text>
+                        </switch>
+                    </g>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 400 L 130 360" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                    <path xmlns="http://www.w3.org/2000/svg" d="M 130 300 L 130 290 Q 130 280 130 270 L 130 260" fill="none" stroke="#000000" stroke-miterlimit="10" pointer-events="none"/>
+                </svg>
+            </div>
+        </div>
+    </section>
+
+    <section class="slide">
+        <h2>Примеры селекторов</h2>
+        <ol>
+        <li class="next">
+            <code>'FunctionDeclaration'</code>, <code>'BinaryExpression'</code>
+        </li>
+        <li class="next">
+            <code>'ReturnStatement Literal[value = null]'</code>
+            <br>
+            <code class="next"><i><mark>return null;</mark></i></code>
+        </li>
+        <li class="next">
+            <code>'Identifier[name=/.*\d+$/]'</code>
+            <br>
+            <code class="next"><i>const <mark>picture2</mark> = 'https://...'</i></code>
+        </li>
+        <li class="next">
+            <code>'FunctionDeclaration:nth-child(2)'</code>
+        </li>
+        </ol>
+        <div class="next note">
+            <a href="https://eslint.org/docs/developer-guide/selectors">Selectors</a>
+        </div>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">create(context) {</code>
+            <code class="mark">    return {</code>
+            <code class="mark">        [selector](node) {</code>
+            <code class="mark">            context.report ({</code>
+            <code class="mark">                node,</code>
+            <code class="mark">                message: 'Don\'t use "only"',</code>
+            <code class="mark">            });</code>
+            <code class="mark">        },</code>
+            <code class="mark">    };</code>
+            <code class="mark">}</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <h2>План</h2>
+        <ol>
+            <li><s>Введение</s></li>
+            <li><s>Теория</s></li>
+            <li><b>Практика</b></li>
+            <li>Альтернативы</li>
+            <li>Выводы</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">const {makeSuite} = require('ginny');</code>
+            <code class="mark"> </code>
+            <code class="mark">module.exports = makeSuite('Проверка кнопки «Купить»', {</code>
+            <code class="mark">    id: 'market-215',</code>
+            <code class="mark">    test() {</code>
+            <code class="mark">        return this.expect(this.button.name).toBe('Купить');</code>
+            <code class="mark">    },</code>
+            <code class="mark">});</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <pre>
+            <code class="mark">const {makeSuite} = require('ginny');</code>
+            <code class="mark"> </code>
+            <code class="mark">module.exports = makeSuite('Проверка кнопки «Купить» <mark>only</mark>', {</code>
+            <code class="mark">    id: 'market-215',</code>
+            <code class="mark">    test() {</code>
+            <code class="mark">        return this.expect(this.button.name).toBe('Купить');</code>
+            <code class="mark">    },</code>
+            <code class="mark">});</code>
+        </pre>
+    </section>
+
+    <section class="slide">
+        <h2>План</h2>
+        <ol>
+            <li><s>Введение</s></li>
+            <li><s>Теория</s></li>
+            <li><s>Практика</s></li>
+            <li><b>Альтернативы</b></li>
+            <li>Выводы</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>Альтернативы</h2>
+        <ol>
+            <li class="next">
+                <a href="https://eslint.org/docs/rules/no-restricted-syntax">no-restricted-syntax</a>
+                <pre>
+                    <code class="mark">'no-restricted-syntax': ['error', {</code>
+                    <code class="mark">  selector: 'ReturnStatement',</code>
+                    <code class="mark">  message: 'No return!',</code>
+                    <code class="mark">}]</code>
+                </pre>
+            </li>
+            <li class="next">Типизация</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>План</h2>
+        <ol>
+            <li><s>Введение</s></li>
+            <li><s>Теория</s></li>
+            <li><s>Практика</s></li>
+            <li><s>Альтернативы</s></li>
+            <li><b>Выводы</b></li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>Выводы</h2>
+        <ol>
+            <li class="next">Просто реализовать</li>
+            <li class="next">Упрощает разработку</li>
+            <li class="next">Соблюдаются договорённости</li>
+        </ol>
+    </section>
+
+    <section class="slide">
+        <h2>Контакты</h2>
+        <div class="double">
+            <div>github: <a href="https://github.com/leonidlebedev">leonidlebedev</a></div>
+            <div>telegram: <a href="https://t.me/leonidlebedev">leonidlebedev</a></div>
+            <div>email: <a href="mailto:leonidlebedev@yandex-team.ru">leonidlebedev@yandex-team.ru</a></div>
+            <div>Презентация: <a href="https://github.com/leonidlebedev/presentations">/presentations</a></div>
+        </div>
+        <img src="pictures/qr.png">
+    </section>
+
+    <div class="progress"></div>
+
+    <script src="shower/shower.min.js"></script>
+
+    <script src="src/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+{
+  "name": "eslint-plugin-market",
+  "version": "1.0.0",
+  "description": "ESLint rules for Yandex.Market",
+  "keywords": [
+    "eslint",
+    "eslintplugin",
+    "eslint-plugin",
+    "eslint-plugin-market"
+  ],
+  "author": "Leonid Lebedev",
+  "main": "lib/index.js",
+  "scripts": {
+    "test": "mocha tests --recursive"
+  },
+  "devDependencies": {
+    "eslint": "^5.0.0",
+    "mocha": "^6.1.4"
+  },
+  "engines": {
+    "node": ">=8.0.0"
+  },
+  "license": "ISC"
+}
